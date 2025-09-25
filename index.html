@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AptitudePro - Gamified Aptitude Trainer</title>
+    <title>Levelup Aptitude - Gamified Aptitude Trainer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -92,6 +92,39 @@
             color: #CD7F32;
             text-shadow: 0 0 10px rgba(205, 127, 50, 0.5);
         }
+        
+        .option-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .option-btn:hover {
+            transform: scale(1.02);
+        }
+        
+        .option-btn.correct {
+            background-color: #d1fae5 !important;
+            border-color: #10b981 !important;
+        }
+        
+        .option-btn.incorrect {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+        }
+        
+        .feedback-toast {
+            animation: slideInRight 0.5s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -100,8 +133,8 @@
         <div class="container mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-4">
-                    <i class="fas fa-brain text-3xl"></i>
-                    <h1 class="text-2xl font-bold">AptitudePro</h1>
+                    <i class="fas fa-rocket text-3xl"></i>
+                    <h1 class="text-2xl font-bold">Levelup Aptitude</h1>
                 </div>
                 <div class="flex items-center space-x-6">
                     <button onclick="showSection('dashboard')" class="nav-btn hover:text-yellow-300 transition">
@@ -120,6 +153,10 @@
                     <div class="flex items-center space-x-3 bg-white/20 px-4 py-2 rounded-full">
                         <i class="fas fa-fire text-orange-300"></i>
                         <span id="userStreak" class="font-bold">7</span>
+                    </div>
+                    <div class="flex items-center space-x-3 bg-white/20 px-4 py-2 rounded-full">
+                        <i class="fas fa-star text-purple-300"></i>
+                        <span id="userLevel" class="font-bold">3</span>
                     </div>
                 </div>
             </div>
@@ -141,19 +178,19 @@
                         <div>
                             <div class="flex justify-between text-sm mb-1">
                                 <span>Overall Progress</span>
-                                <span class="font-semibold">65%</span>
+                                <span class="font-semibold" id="progressPercent">65%</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full" style="width: 65%"></div>
+                                <div id="progressBar" class="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full" style="width: 65%"></div>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4 mt-4">
                             <div class="text-center">
-                                <p class="text-2xl font-bold text-purple-600">12</p>
+                                <p class="text-2xl font-bold text-purple-600" id="gamesPlayed">12</p>
                                 <p class="text-sm text-gray-600">Games Played</p>
                             </div>
                             <div class="text-center">
-                                <p class="text-2xl font-bold text-green-600">85%</p>
+                                <p class="text-2xl font-bold text-green-600" id="avgScore">85%</p>
                                 <p class="text-sm text-gray-600">Avg Score</p>
                             </div>
                         </div>
@@ -164,7 +201,7 @@
                 <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-semibold text-gray-700">Current Level</h3>
-                        <span class="level-badge text-white px-3 py-1 rounded-full text-sm font-bold">Level 3</span>
+                        <span class="level-badge text-white px-3 py-1 rounded-full text-sm font-bold">Level <span id="levelNumber">3</span></span>
                     </div>
                     <div class="text-center">
                         <svg class="w-32 h-32 mx-auto mb-4">
@@ -178,7 +215,7 @@
                                 </linearGradient>
                             </defs>
                         </svg>
-                        <p class="text-sm text-gray-600">700 / 1000 XP to Level 4</p>
+                        <p class="text-sm text-gray-600"><span id="currentXP">700</span> / <span id="nextLevelXP">1000</span> XP to Level <span id="nextLevel">4</span></p>
                     </div>
                 </div>
 
@@ -564,11 +601,28 @@
                 streak: 7,
                 level: 3,
                 xp: 700,
-                gamesPlayed: 12
-            }
+                gamesPlayed: 12,
+                totalScore: 1020,
+                correctAnswers: 0,
+                incorrectAnswers: 0
+            },
+            levelThresholds: [
+                { level: 1, xp: 0 },
+                { level: 2, xp: 500 },
+                { level: 3, xp: 1000 },
+                { level: 4, xp: 2000 },
+                { level: 5, xp: 3500 },
+                { level: 6, xp: 5500 },
+                { level: 7, xp: 8000 },
+                { level: 8, xp: 11000 },
+                { level: 9, xp: 15000 },
+                { level: 10, xp: 20000 },
+                { level: 11, xp: 26000 },
+                { level: 12, xp: 33000 }
+            ]
         };
 
-        // Sample game data
+        // Extended game data with more questions
         const gameData = {
             logical: {
                 pattern: {
@@ -583,6 +637,46 @@
                             question: "Find the missing number: 3, 6, 9, 12, ?",
                             options: ["15", "18", "21", "14"],
                             correct: 0
+                        },
+                        {
+                            question: "Complete the pattern: 1, 4, 9, 16, ?",
+                            options: ["20", "25", "30", "36"],
+                            correct: 1
+                        },
+                        {
+                            question: "What comes next: 5, 10, 7, 14, 11, ?",
+                            options: ["22", "18", "16", "20"],
+                            correct: 0
+                        },
+                        {
+                            question: "Find the next number: 2, 3, 5, 8, 13, ?",
+                            options: ["18", "21", "19", "20"],
+                            correct: 1
+                        },
+                        {
+                            question: "Complete the sequence: 1, 1, 2, 3, 5, 8, ?",
+                            options: ["13", "11", "10", "12"],
+                            correct: 0
+                        },
+                        {
+                            question: "What comes next: 4, 16, 36, 64, ?",
+                            options: ["81", "100", "121", "144"],
+                            correct: 1
+                        },
+                        {
+                            question: "Find the missing number: 1, 8, 27, 64, ?",
+                            options: ["100", "125", "144", "169"],
+                            correct: 1
+                        },
+                        {
+                            question: "Complete the pattern: 10, 7, 14, 11, 22, ?",
+                            options: ["19", "20", "21", "18"],
+                            correct: 0
+                        },
+                        {
+                            question: "What comes next: 1, 4, 7, 10, 13, ?",
+                            options: ["15", "16", "17", "18"],
+                            correct: 1
                         }
                     ]
                 },
@@ -593,6 +687,51 @@
                             question: "All cats are mammals. Some mammals are black. Which statement must be true?",
                             options: ["All cats are black", "Some cats are black", "No cats are black", "None of the above"],
                             correct: 3
+                        },
+                        {
+                            question: "Some birds can fly. Penguins are birds. Therefore:",
+                            options: ["Penguins can fly", "Some penguins can fly", "No penguins can fly", "All birds can fly"],
+                            correct: 2
+                        },
+                        {
+                            question: "All roses are flowers. Some flowers are red. Therefore:",
+                            options: ["All roses are red", "Some roses are red", "No roses are red", "None of the above"],
+                            correct: 3
+                        },
+                        {
+                            question: "No dogs are cats. All cats are animals. Therefore:",
+                            options: ["No dogs are animals", "Some dogs are animals", "All dogs are animals", "None of the above"],
+                            correct: 3
+                        },
+                        {
+                            question: "All students study. John studies. Therefore:",
+                            options: ["John is a student", "John is not a student", "All students are John", "None of the above"],
+                            correct: 0
+                        },
+                        {
+                            question: "Some fruits are sweet. All apples are fruits. Therefore:",
+                            options: ["All apples are sweet", "Some apples are sweet", "No apples are sweet", "None of the above"],
+                            correct: 1
+                        },
+                        {
+                            question: "All cars have wheels. Some vehicles have wheels. Therefore:",
+                            options: ["All vehicles are cars", "Some vehicles are cars", "No vehicles are cars", "None of the above"],
+                            correct: 1
+                        },
+                        {
+                            question: "No fish can fly. Some birds can fly. Therefore:",
+                            options: ["No fish are birds", "Some fish are birds", "All birds can fly", "None of the above"],
+                            correct: 0
+                        },
+                        {
+                            question: "All books have pages. Some magazines have pages. Therefore:",
+                            options: ["All magazines are books", "Some magazines are books", "No magazines are books", "None of the above"],
+                            correct: 3
+                        },
+                        {
+                            question: "Some trees are tall. All oak trees are trees. Therefore:",
+                            options: ["All oak trees are tall", "Some oak trees are tall", "No oak trees are tall", "None of the above"],
+                            correct: 1
                         }
                     ]
                 },
@@ -602,6 +741,51 @@
                         {
                             question: "Doctor is to Hospital as Teacher is to ?",
                             options: ["Student", "School", "Book", "Knowledge"],
+                            correct: 1
+                        },
+                        {
+                            question: "Book is to Author as Painting is to ?",
+                            options: "Canvas", "Artist", "Gallery", "Brush"],
+                            correct: 1
+                        },
+                        {
+                            question: "Water is to Ice as Steam is to ?",
+                            options: ["Liquid", "Gas", "Solid", "Vapor"],
+                            correct: 3
+                        },
+                        {
+                            question: "Pen is to Write as Knife is to ?",
+                            options: ["Cut", "Sharp", "Steel", "Handle"],
+                            correct: 0
+                        },
+                        {
+                            question: "Fish is to Aquarium as Lion is to ?",
+                            options: ["Zoo", "Cage", "Jungle", "Safari"],
+                            correct: 0
+                        },
+                        {
+                            question: "Seed is to Plant as Egg is to ?",
+                            options: ["Bird", "Chicken", "Hatch", "Nest"],
+                            correct: 1
+                        },
+                        {
+                            question: "Car is to Road as Boat is to ?",
+                            options: ["Water", "Sea", "River", "Ocean"],
+                            correct: 0
+                        },
+                        {
+                            question: "Music is to Ear as Food is to ?",
+                            options: ["Mouth", "Taste", "Stomach", "Tongue"],
+                            correct: 1
+                        },
+                        {
+                            question: "Light is to Bulb as Heat is to ?",
+                            options: ["Fire", "Sun", "Furnace", "Temperature"],
+                            correct: 2
+                        },
+                        {
+                            question: "Key is to Lock as Password is to ?",
+                            options: ["Computer", "Security", "Account", "System"],
                             correct: 1
                         }
                     ]
@@ -613,6 +797,51 @@
                             question: "Complete the series: 1, 1, 2, 3, 5, 8, ?",
                             options: ["13", "11", "10", "12"],
                             correct: 0
+                        },
+                        {
+                            question: "What comes next: 2, 6, 12, 20, 30, ?",
+                            options: ["40", "42", "44", "46"],
+                            correct: 1
+                        },
+                        {
+                            question: "Find the next number: 3, 9, 27, 81, ?",
+                            options: ["162", "243", "324", "405"],
+                            correct: 1
+                        },
+                        {
+                            question: "Complete: 1, 4, 9, 16, 25, ?",
+                            options: ["30", "35", "36", "40"],
+                            correct: 2
+                        },
+                        {
+                            question: "What comes next: 10, 8, 6, 4, ?",
+                            options: ["2", "0", "3", "1"],
+                            correct: 0
+                        },
+                        {
+                            question: "Find the missing: 2, 5, 10, 17, ?",
+                            options: ["24", "26", "28", "30"],
+                            correct: 1
+                        },
+                        {
+                            question: "Complete: 1, 3, 6, 10, 15, ?",
+                            options: ["18", "20", "21", "22"],
+                            correct: 2
+                        },
+                        {
+                            question: "What comes next: 4, 12, 36, 108, ?",
+                            options: ["216", "324", "432", "540"],
+                            correct: 1
+                        },
+                        {
+                            question: "Find the next: 7, 14, 21, 28, ?",
+                            options: ["33", "35", "37", "40"],
+                            correct: 1
+                        },
+                        {
+                            question: "Complete: 1, 2, 4, 7, 11, ?",
+                            options: ["15", "16", "17", "18"],
+                            correct: 1
                         }
                     ]
                 },
@@ -623,6 +852,51 @@
                             question: "Which word does not belong? Apple, Banana, Carrot, Orange",
                             options: ["Apple", "Banana", "Carrot", "Orange"],
                             correct: 2
+                        },
+                        {
+                            question: "Find the odd one out: Chair, Table, Bed, Lamp",
+                            options: ["Chair", "Table", "Bed", "Lamp"],
+                            correct: 3
+                        },
+                        {
+                            question: "Which is different? Circle, Square, Triangle, Cube",
+                            options: ["Circle", "Square", "Triangle", "Cube"],
+                            correct: 3
+                        },
+                        {
+                            question: "Odd one out: Dog, Cat, Bird, Fish",
+                            options: ["Dog", "Cat", "Bird", "Fish"],
+                            correct: 3
+                        },
+                        {
+                            question: "Which doesn't belong? Red, Blue, Green, Circle",
+                            options: ["Red", "Blue", "Green", "Circle"],
+                            correct: 3
+                        },
+                        {
+                            question: "Find the odd one: Pen, Pencil, Paper, Eraser",
+                            options: ["Pen", "Pencil", "Paper", "Eraser"],
+                            correct: 2
+                        },
+                        {
+                            question: "Which is different? 2, 4, 6, 9",
+                            options: ["2", "4", "6", "9"],
+                            correct: 3
+                        },
+                        {
+                            question: "Odd one out: Monday, Tuesday, Wednesday, January",
+                            options: ["Monday", "Tuesday", "Wednesday", "January"],
+                            correct: 3
+                        },
+                        {
+                            question: "Which doesn't belong? Car, Bus, Train, Airplane",
+                            options: ["Car", "Bus", "Train", "Airplane"],
+                            correct: 3
+                        },
+                        {
+                            question: "Find the odd one: Happy, Sad, Angry, Table",
+                            options: ["Happy", "Sad", "Angry", "Table"],
+                            correct: 3
                         }
                     ]
                 }
@@ -635,6 +909,51 @@
                             question: "What is 25% of 80?",
                             options: ["15", "20", "25", "30"],
                             correct: 1
+                        },
+                        {
+                            question: "Calculate: 15 × 8 + 12 ÷ 4",
+                            options: ["120", "123", "126", "129"],
+                            correct: 1
+                        },
+                        {
+                            question: "What is the sum of the first 10 natural numbers?",
+                            options: ["45", "50", "55", "60"],
+                            correct: 2
+                        },
+                        {
+                            question: "Find the average of 12, 18, 24, and 30",
+                            options: ["18", "20", "21", "22"],
+                            correct: 2
+                        },
+                        {
+                            question: "What is 3/4 of 200?",
+                            options: ["100", "125", "150", "175"],
+                            correct: 2
+                        },
+                        {
+                            question: "Calculate: 144 ÷ 12 + 25 × 2",
+                            options: ["50", "62", "74", "86"],
+                            correct: 1
+                        },
+                        {
+                            question: "What is 40% of 150?",
+                            options: ["50", "60", "70", "80"],
+                            correct: 1
+                        },
+                        {
+                            question: "Find the product of 15 and 12",
+                            options: ["160", "170", "180", "190"],
+                            correct: 2
+                        },
+                        {
+                            question: "What is the difference between 100 and 37?",
+                            options: ["63", "73", "83", "93"],
+                            correct: 0
+                        },
+                        {
+                            question: "Calculate: 2³ + 3²",
+                            options: ["13", "15", "17", "19"],
+                            correct: 2
                         }
                     ]
                 },
@@ -645,6 +964,51 @@
                             question: "If x + 5 = 12, what is x?",
                             options: ["5", "6", "7", "8"],
                             correct: 2
+                        },
+                        {
+                            question: "Solve for x: 2x - 3 = 7",
+                            options: ["3", "4", "5", "6"],
+                            correct: 2
+                        },
+                        {
+                            question: "If 3x = 21, what is the value of x?",
+                            options: ["5", "6", "7", "8"],
+                            correct: 2
+                        },
+                        {
+                            question: "Solve: 4x + 2 = 18",
+                            options: ["3", "4", "5", "6"],
+                            correct: 1
+                        },
+                        {
+                            question: "If x - 7 = 3, what is x?",
+                            options: ["8", "9", "10", "11"],
+                            correct: 2
+                        },
+                        {
+                            question: "Solve for y: 5y = 35",
+                            options: ["5", "6", "7", "8"],
+                            correct: 2
+                        },
+                        {
+                            question: "If 2x + 3 = 11, what is x?",
+                            options: ["3", "4", "5", "6"],
+                            correct: 1
+                        },
+                        {
+                            question: "Solve: x/2 = 8",
+                            options: ["12", "14", "16", "18"],
+                            correct: 2
+                        },
+                        {
+                            question: "If 3x - 5 = 10, what is x?",
+                            options: ["3", "4", "5", "6"],
+                            correct: 2
+                        },
+                        {
+                            question: "Solve: 2(x + 3) = 14",
+                            options: ["3", "4", "5", "6"],
+                            correct: 1
                         }
                     ]
                 },
@@ -655,6 +1019,51 @@
                             question: "What is the area of a square with side 5cm?",
                             options: ["20 cm²", "25 cm²", "30 cm²", "35 cm²"],
                             correct: 1
+                        },
+                        {
+                            question: "Find the perimeter of a rectangle with length 8cm and width 5cm",
+                            options: ["26 cm", "30 cm", "34 cm", "40 cm"],
+                            correct: 0
+                        },
+                        {
+                            question: "What is the area of a circle with radius 7cm? (Use π = 22/7)",
+                            options: ["154 cm²", "176 cm²", "198 cm²", "220 cm²"],
+                            correct: 0
+                        },
+                        {
+                            question: "Find the volume of a cube with edge 3cm",
+                            options: ["9 cm³", "18 cm³", "27 cm³", "36 cm³"],
+                            correct: 2
+                        },
+                        {
+                            question: "What is the circumference of a circle with diameter 14cm?",
+                            options: ["22 cm", "44 cm", "66 cm", "88 cm"],
+                            correct: 1
+                        },
+                        {
+                            question: "Find the area of a triangle with base 6cm and height 8cm",
+                            options: ["24 cm²", "36 cm²", "48 cm²", "60 cm²"],
+                            correct: 0
+                        },
+                        {
+                            question: "What is the volume of a cylinder with radius 3cm and height 10cm?",
+                            options: ["90π cm³", "180π cm³", "270π cm³", "360π cm³"],
+                            correct: 0
+                        },
+                        {
+                            question: "Find the surface area of a cube with edge 4cm",
+                            options: ["64 cm²", "96 cm²", "128 cm²", "160 cm²"],
+                            correct: 1
+                        },
+                        {
+                            question: "What is the area of a trapezoid with bases 5cm and 9cm and height 4cm?",
+                            options: ["24 cm²", "28 cm²", "32 cm²", "36 cm²"],
+                            correct: 1
+                        },
+                        {
+                            question: "Find the volume of a sphere with radius 3cm",
+                            options: ["36π cm³", "48π cm³", "72π cm³", "108π cm³"],
+                            correct: 0
                         }
                     ]
                 },
@@ -665,6 +1074,51 @@
                             question: "A number increased by 20% becomes 60. What was the original number?",
                             options: ["45", "50", "55", "48"],
                             correct: 1
+                        },
+                        {
+                            question: "What is 15% of 200?",
+                            options: ["25", "30", "35", "40"],
+                            correct: 1
+                        },
+                        {
+                            question: "If 30% of a number is 45, what is the number?",
+                            options: ["120", "130", "140", "150"],
+                            correct: 3
+                        },
+                        {
+                            question: "A shirt costs $40. If it's on sale for 25% off, what is the sale price?",
+                            options: ["$25", "$28", "$30", "$32"],
+                            correct: 2
+                        },
+                        {
+                            question: "What percentage is 12 of 48?",
+                            options: ["20%", "25%", "30%", "35%"],
+                            correct: 1
+                        },
+                        {
+                            question: "A number decreased by 10% becomes 81. What was the original number?",
+                            options: ["85", "90", "95", "100"],
+                            correct: 1
+                        },
+                        {
+                            question: "What is 75% of 80?",
+                            options: ["50", "55", "60", "65"],
+                            correct: 2
+                        },
+                        {
+                            question: "If 40% of students are boys and there are 120 boys, how many students are there?",
+                            options: ["250", "300", "350", "400"],
+                            correct: 1
+                        },
+                        {
+                            question: "A price increased from $50 to $60. What is the percentage increase?",
+                            options: ["15%", "18%", "20%", "25%"],
+                            correct: 2
+                        },
+                        {
+                            question: "What is 120% of 50?",
+                            options: ["55", "60", "65", "70"],
+                            correct: 1
                         }
                     ]
                 },
@@ -674,6 +1128,51 @@
                         {
                             question: "If an item is bought for $100 and sold for $120, what is the profit percentage?",
                             options: ["15%", "20%", "25%", "30%"],
+                            correct: 1
+                        },
+                        {
+                            question: "A shopkeeper sells an article for $450 at a loss of 10%. What was the cost price?",
+                            options: ["$450", "$475", "$500", "$525"],
+                            correct: 2
+                        },
+                        {
+                            question: "If cost price is $80 and selling price is $100, what is the profit?",
+                            options: ["$15", "$20", "$25", "$30"],
+                            correct: 1
+                        },
+                        {
+                            question: "A man sells two articles at $120 each. He gains 20% on one and loses 20% on the other. What is his net result?",
+                            options: ["No profit no loss", "Profit of $10", "Loss of $10", "Profit of $20"],
+                            correct: 2
+                        },
+                        {
+                            question: "If selling price is $90 and profit is 20%, what is the cost price?",
+                            options: ["$65", "70", "$75", "$80"],
+                            correct: 2
+                        },
+                        {
+                            question: "A book is sold for $30 at a profit of 25%. What is the cost price?",
+                            options: ["$20", "$22", "$24", "$26"],
+                            correct: 2
+                        },
+                        {
+                            question: "If cost price is $150 and loss is 10%, what is the selling price?",
+                            options: ["$125", "$130", "135", "$140"],
+                            correct: 2
+                        },
+                        {
+                            question: "A trader marks his goods 30% above cost price and gives a discount of 10%. What is his profit percentage?",
+                            options: ["15%", "17%", "20%", "23%"],
+                            correct: 1
+                        },
+                        {
+                            question: "If cost price of 10 articles is equal to selling price of 8 articles, what is the profit percentage?",
+                            options: ["20%", "25%", "30%", "35%"],
+                            correct: 1
+                        },
+                        {
+                            question: "A man buys an article for $200 and sells it for $250. What is the profit percentage?",
+                            options: ["20%", "25%", "30%", "35%"],
                             correct: 1
                         }
                     ]
@@ -687,6 +1186,51 @@
                             question: "What is a synonym for 'Happy'?",
                             options: ["Sad", "Joyful", "Angry", "Tired"],
                             correct: 1
+                        },
+                        {
+                            question: "Find a synonym for 'Beautiful'",
+                            options: ["Ugly", "Attractive", "Plain", "Simple"],
+                            correct: 1
+                        },
+                        {
+                            question: "What means the same as 'Quick'?",
+                            options: ["Slow", "Fast", "Lazy", "Tired"],
+                            correct: 1
+                        },
+                        {
+                            question: "Synonym for 'Big'",
+                            options: ["Small", "Large", "Tiny", "Little"],
+                            correct: 1
+                        },
+                        {
+                            question: "What is similar to 'Brave'?",
+                            options: ["Cowardly", "Courageous", "Fearful", "Scared"],
+                            correct: 1
+                        },
+                        {
+                            question: "Find synonym for 'Smart'",
+                            options: ["Dumb", "Intelligent", "Stupid", "Foolish"],
+                            correct: 1
+                        },
+                        {
+                            question: "What means the same as 'Cold'?",
+                            options: ["Hot", "Cool", "Warm", "Boiling"],
+                            correct: 1
+                        },
+                        {
+                            question: "Synonym for 'Good'",
+                            options: ["Bad", "Evil", "Excellent", "Poor"],
+                            correct: 2
+                        },
+                        {
+                            question: "What is similar to 'Fast'?",
+                            options: ["Slow", "Quick", "Sluggish", "Lazy"],
+                            correct: 1
+                        },
+                        {
+                            question: "Find synonym for 'Rich'",
+                            options: ["Poor", "Wealthy", "Broke", "Needy"],
+                            correct: 1
                         }
                     ]
                 },
@@ -696,6 +1240,51 @@
                         {
                             question: "What is an antonym for 'Hot'?",
                             options: ["Warm", "Cool", "Cold", "Mild"],
+                            correct: 2
+                        },
+                        {
+                            question: "Find the opposite of 'Love'",
+                            options: ["Like", "Adore", "Hate", "Enjoy"],
+                            correct: 2
+                        },
+                        {
+                            question: "What means the opposite of 'Up'?",
+                            options: ["High", "Above", "Down", "Top"],
+                            correct: 2
+                        },
+                        {
+                            question: "Antonym for 'Day'",
+                            options: ["Morning", "Noon", "Night", "Evening"],
+                            correct: 2
+                        },
+                        {
+                            question: "What is the opposite of 'Good'?",
+                            options: ["Great", "Excellent", "Bad", "Wonderful"],
+                            correct: 2
+                        },
+                        {
+                            question: "Find antonym for 'Start'",
+                            options: ["Begin", "Commence", "End", "Initiate"],
+                            correct: 2
+                        },
+                        {
+                            question: "What means the opposite of 'Win'?",
+                            options: ["Victory", "Success", "Defeat", "Triumph"],
+                            correct: 2
+                        },
+                        {
+                            question: "Antonym for 'Light'",
+                            options: ["Bright", "Dark", "Shiny", "Glowing"],
+                            correct: 1
+                        },
+                        {
+                            question: "What is the opposite of 'Full'?",
+                            options: ["Complete", "Empty", "Packed", "Loaded"],
+                            correct: 1
+                        },
+                        {
+                            question: "Find antonym for 'Increase'",
+                            options: ["Grow", "Rise", "Decrease", "Expand"],
                             correct: 2
                         }
                     ]
@@ -707,6 +1296,51 @@
                             question: "The quick brown fox jumps over the lazy dog. What color is the fox?",
                             options: ["Red", "Brown", "White", "Black"],
                             correct: 1
+                        },
+                        {
+                            question: "Mary has a little lamb. Its fleece was white as snow. What color was the lamb's fleece?",
+                            options: ["Black", "Brown", "White", "Gray"],
+                            correct: 2
+                        },
+                        {
+                            question: "In the forest, the tall trees provide shade for the animals. What do the trees provide?",
+                            options: ["Food", "Water", "Shade", "Shelter"],
+                            correct: 2
+                        },
+                        {
+                            question: "The children played happily in the park all afternoon. Where did the children play?",
+                            options: ["School", "Home", "Park", "Garden"],
+                            correct: 2
+                        },
+                        {
+                            question: "The baker baked fresh bread early in the morning. When did the baker bake the bread?",
+                            options: ["Noon", "Evening", "Morning", "Night"],
+                            correct: 2
+                        },
+                        {
+                            question: "The river flows through the valley and into the sea. Where does the river flow?",
+                            options: ["Mountain", "Valley", "Desert", "Plain"],
+                            correct: 1
+                        },
+                        {
+                            question: "The teacher explained the lesson carefully to the students. Who explained the lesson?",
+                            options: ["Students", "Principal", "Teacher", "Parents"],
+                            correct: 2
+                        },
+                        {
+                            question: "The flowers bloomed beautifully in the spring garden. When did the flowers bloom?",
+                            options: ["Summer", "Winter", "Spring", "Autumn"],
+                            correct: 2
+                        },
+                        {
+                            question: "The cat slept peacefully on the warm windowsill. Where did the cat sleep?",
+                            options: ["Bed", "Floor", "Windowsill", "Couch"],
+                            correct: 2
+                        },
+                        {
+                            question: "The chef prepared a delicious meal for the guests. Who prepared the meal?",
+                            options: ["Guests", "Waiter", "Chef", "Host"],
+                            correct: 2
                         }
                     ]
                 },
@@ -717,6 +1351,51 @@
                             question: "The sun _____ in the east.",
                             options: ["rises", "sets", "shines", "moves"],
                             correct: 0
+                        },
+                        {
+                            question: "Birds _____ in the sky.",
+                            options: ["swim", "fly", "walk", "crawl"],
+                            correct: 1
+                        },
+                        {
+                            question: "Water _____ at 100 degrees Celsius.",
+                            options: ["freezes", "boils", "melts", "evaporates"],
+                            correct: 1
+                        },
+                        {
+                            question: "Plants need _____ to grow.",
+                            options: ["darkness", "sunlight", "cold", "salt"],
+                            correct: 1
+                        },
+                        {
+                            question: "The Earth _____ around the Sun.",
+                            options: ["stands", "moves", "revolves", "stops"],
+                            correct: 2
+                        },
+                        {
+                            question: "We use our eyes to _____.",
+                            options: ["hear", "smell", "see", "taste"],
+                            correct: 2
+                        },
+                        {
+                            question: "Ice _____ when heated.",
+                            options: ["expands", "contracts", "melts", "freezes"],
+                            correct: 2
+                        },
+                        {
+                            question: "Fish _____ in water.",
+                            options: ["fly", "walk", "swim", "run"],
+                            correct: 2
+                        },
+                        {
+                            question: "Books are made of _____.",
+                            options: ["metal", "paper", "plastic", "glass"],
+                            correct: 1
+                        },
+                        {
+                            question: "The moon _____ around the Earth.",
+                            options: ["stands", "orbits", "falls", "rises"],
+                            correct: 1
                         }
                     ]
                 },
@@ -726,6 +1405,51 @@
                         {
                             question: "Which sentence is correct?",
                             options: ["He go to school", "He goes to school", "He going to school", "He gone to school"],
+                            correct: 1
+                        },
+                        {
+                            question: "Choose the correct sentence:",
+                            options: ["She don't like apples", "She doesn't like apples", "She not like apples", "She no like apples"],
+                            correct: 1
+                        },
+                        {
+                            question: "Which is grammatically correct?",
+                            options: ["They is playing", "They are playing", "They be playing", "They am playing"],
+                            correct: 1
+                        },
+                        {
+                            question: "Select the correct sentence:",
+                            options: ["I have a book", "I has a book", "I having a book", "I am having a book"],
+                            correct: 0
+                        },
+                        {
+                            question: "Which sentence is correct?",
+                            options: ["The cat are sleeping", "The cat is sleeping", "The cat be sleeping", "The cat am sleeping"],
+                            correct: 1
+                        },
+                        {
+                            question: "Choose the correct form:",
+                            options: ["She write beautifully", "She writes beautifully", "She writing beautifully", "She wrote beautifully"],
+                            correct: 1
+                        },
+                        {
+                            question: "Which is correct?",
+                            options: ["We was happy", "We were happy", "We be happy", "We am happy"],
+                            correct: 1
+                        },
+                        {
+                            question: "Select the correct sentence:",
+                            options: ["He don't understand", "He doesn't understand", "He not understand", "He no understand"],
+                            correct: 1
+                        },
+                        {
+                            question: "Which is grammatically correct?",
+                            options: ["The dogs barks", "The dogs bark", "The dogs barking", "The dogs is barking"],
+                            correct: 1
+                        },
+                        {
+                            question: "Choose the correct sentence:",
+                            options: ["I am liking music", "I like music", "I likes music", "I liking music"],
                             correct: 1
                         }
                     ]
@@ -739,6 +1463,51 @@
                             question: "Based on the table: Product A sold 100 units, Product B sold 150 units. Which sold more?",
                             options: ["Product A", "Product B", "Equal", "Cannot determine"],
                             correct: 1
+                        },
+                        {
+                            question: "Table shows: January - 50 sales, February - 75 sales, March - 100 sales. What is the average monthly sales?",
+                            options: ["65", "75", "85", "95"],
+                            correct: 1
+                        },
+                        {
+                            question: "Data table: Week 1 - 20 students, Week 2 - 25 students, Week 3 - 30 students. How many students in total?",
+                            options: ["65", "70", "75", "80"],
+                            correct: 2
+                        },
+                        {
+                            question: "Table: Red apples - 40, Green apples - 60. What percentage are green apples?",
+                            options: ["50%", "60%", "70%", "80%"],
+                            correct: 1
+                        },
+                        {
+                            question: "Sales data: Q1 - $2000, Q2 - $3000, Q3 - $2500, Q4 - $3500. Which quarter had highest sales?",
+                            options: ["Q1", "Q2", "Q3", "Q4"],
+                            correct: 3
+                        },
+                        {
+                            question: "Table: Day 1 - 15 visitors, Day 2 - 20 visitors, Day 3 - 18 visitors. What was the total visitors?",
+                            options: ["48", "53", "58", "63"],
+                            correct: 1
+                        },
+                        {
+                            question: "Data: Product X - 80% satisfaction, Product Y - 90% satisfaction. Which has higher satisfaction?",
+                            options: ["Product X", "Product Y", "Equal", "Cannot determine"],
+                            correct: 1
+                        },
+                        {
+                            question: "Table: Male students - 120, Female students - 180. What is the ratio of male to female?",
+                            options: ["1:1.5", "1:2", "2:3", "3:4"],
+                            correct: 0
+                        },
+                        {
+                            question: "Data: Store A - $5000 revenue, Store B - $7500 revenue. What is the combined revenue?",
+                            options: ["$10,000", "$12,500", "$15,000", "$17,500"],
+                            correct: 1
+                        },
+                        {
+                            question: "Table: Monday - 45 orders, Tuesday - 55 orders. What is the increase?",
+                            options: ["8", "10", "12", "15"],
+                            correct: 1
                         }
                     ]
                 },
@@ -749,6 +1518,51 @@
                             question: "If a bar chart shows January sales at 200 and February at 250, what is the increase?",
                             options: ["20%", "25%", "30%", "50%"],
                             correct: 1
+                        },
+                        {
+                            question: "A chart shows: Apples 30%, Oranges 25%, Bananas 45%. Which fruit has highest percentage?",
+                            options: ["Apples", "Oranges", "Bananas", "Equal"],
+                            correct: 2
+                        },
+                        {
+                            question: "Graph shows: Week 1 - 100 units, Week 2 - 120 units, Week 3 - 90 units. Which week had lowest sales?",
+                            options: ["Week 1", "Week 2", "Week 3", "Equal"],
+                            correct: 2
+                        },
+                        {
+                            question: "Chart displays: Product A - 40, Product B - 60, Product C - 50. What is the average?",
+                            options: ["45", "50", "55", "60"],
+                            correct: 1
+                        },
+                        {
+                            question: "A bar graph shows values: 10, 20, 30, 40. What is the median?",
+                            options: ["20", "25", "30", "35"],
+                            correct: 1
+                        },
+                        {
+                            question: "Chart indicates: Red 25%, Blue 35%, Green 40%. What is the total percentage?",
+                            options: ["90%", "95%", "100%", "105%"],
+                            correct: 2
+                        },
+                        {
+                            question: "Graph shows: Q1 - 150, Q2 - 200, Q3 - 180, Q4 - 220. What is the range?",
+                            options: ["50", "60", "70", "80"],
+                            correct: 2
+                        },
+                        {
+                            question: "A chart displays values: 5, 10, 15, 20. What is the mode?",
+                            options: ["No mode", "5", "10", "15"],
+                            correct: 0
+                        },
+                        {
+                            question: "Graph shows: Day 1 - 80, Day 2 - 90, Day 3 - 85. What is the mean?",
+                            options: ["83", "85", "87", "89"],
+                            correct: 1
+                        },
+                        {
+                            question: "Chart indicates: Product X - 35%, Product Y - 45%, Product Z - 20%. Which has second highest?",
+                            options: ["Product X", "Product Y", "Product Z", "Equal"],
+                            correct: 0
                         }
                     ]
                 },
@@ -759,6 +1573,51 @@
                             question: "In a pie chart, if a slice is 90 degrees, what percentage does it represent?",
                             options: ["20%", "25%", "30%", "50%"],
                             correct: 1
+                        },
+                        {
+                            question: "Pie chart shows: Education 30%, Healthcare 25%, Infrastructure 45%. Which sector has largest share?",
+                            options: ["Education", "Healthcare", "Infrastructure", "Equal"],
+                            correct: 2
+                        },
+                        {
+                            question: "A pie chart has slices: 120°, 90°, 60°, 90°. What percentage is the largest slice?",
+                            options: ["30%", "33.3%", "40%", "50%"],
+                            correct: 1
+                        },
+                        {
+                            question: "Pie chart: Food 40%, Rent 30%, Utilities 20%, Savings 10%. What fraction represents rent?",
+                            options: ["1/4", "3/10", "1/3", "2/5"],
+                            correct: 1
+                        },
+                        {
+                            question: "In a pie chart, if three slices are equal, what percentage does each have?",
+                            options: ["25%", "30%", "33.3%", "40%"],
+                            correct: 2
+                        },
+                        {
+                            question: "Pie chart shows: A 108°, B 72°, C 180°. What percentage is C?",
+                            options: ["40%", "45%", "50%", "55%"],
+                            correct: 2
+                        },
+                        {
+                            question: "A pie chart has 5 equal slices. What angle does each slice have?",
+                            options: ["60°", "72°", "75°", "80°"],
+                            correct: 1
+                        },
+                        {
+                            question: "Pie chart: X 25%, Y 35%, Z 40%. If total is 200, what is X?",
+                            options: ["40", "50", "60", "70"],
+                            correct: 1
+                        },
+                        {
+                            question: "In a pie chart, a slice representing 20% would have what angle?",
+                            options: ["60°", "72°", "80°", "90°"],
+                            correct: 1
+                        },
+                        {
+                            question: "Pie chart shows: P 45°, Q 90°, R 135°, S 90°. Which has largest percentage?",
+                            options: ["P", "Q", "R", "S"],
+                            correct: 2
                         }
                     ]
                 },
@@ -769,6 +1628,51 @@
                             question: "A line graph shows temperature rising from 20°C to 30°C over 5 hours. What is the average increase per hour?",
                             options: ["1°C", "2°C", "3°C", "4°C"],
                             correct: 1
+                        },
+                        {
+                            question: "Line graph: Month 1 - 50, Month 2 - 60, Month 3 - 55. What is the trend from Month 2 to 3?",
+                            options: ["Increasing", "Decreasing", "Constant", "Cannot determine"],
+                            correct: 1
+                        },
+                        {
+                            question: "Graph shows: Day 1 - 100, Day 2 - 120, Day 3 - 140. What is the growth rate?",
+                            options: ["10%", "20%", "30%", "40%"],
+                            correct: 1
+                        },
+                        {
+                            question: "Line graph indicates values: 10, 15, 20, 25. What is the slope?",
+                            options: ["3", "4", "5", "6"],
+                            correct: 2
+                        },
+                        {
+                            question: "A graph shows sales: Jan 200, Feb 250, Mar 300. What is the average monthly increase?",
+                            options: ["40", "50", "60", "70"],
+                            correct: 1
+                        },
+                        {
+                            question: "Line graph: Point A (0,10), Point B (5,30). What is the rate of change?",
+                            options: ["2", "4", "6", "8"],
+                            correct: 1
+                        },
+                        {
+                            question: "Graph shows: Hour 1 - 20, Hour 2 - 25, Hour 3 - 30. What is the projected value at Hour 4?",
+                            options: ["32", "35", "38", "40"],
+                            correct: 1
+                        },
+                        {
+                            question: "Line graph displays: Week 1 - 80, Week 2 - 90, Week 3 - 85. What is the range?",
+                            options: ["5", "10", "15", "20"],
+                            correct: 1
+                        },
+                        {
+                            question: "A graph shows values increasing by 5 each time. If first value is 10, what is the 5th value?",
+                            options: ["25", "30", "35", "40"],
+                            correct: 1
+                        },
+                        {
+                            question: "Line graph: Start at 50, ends at 100 over 10 periods. What is the average increase per period?",
+                            options: ["3", "4", "5", "6"],
+                            correct: 2
                         }
                     ]
                 },
@@ -779,6 +1683,51 @@
                             question: "A table shows 50 apples and a pie chart shows 60% are red. How many red apples?",
                             options: ["25", "30", "35", "40"],
                             correct: 1
+                        },
+                        {
+                            question: "Bar chart shows sales: Q1 100, Q2 150. Pie chart shows Q1 is 40% of total. What is total sales?",
+                            options: ["250", "300", "350", "400"],
+                            correct: 0
+                        },
+                        {
+                            question: "Table: Product A - 200 units, Line graph shows 20% increase next month. What will be sales?",
+                            options: ["220", "240", "260", "280"],
+                            correct: 1
+                        },
+                        {
+                            question: "Pie chart: Education 30%, Bar chart shows total budget $10000. What is education budget?",
+                            options: ["$2000", "$3000", "$4000", "$5000"],
+                            correct: 1
+                        },
+                        {
+                            question: "Table shows 3 departments with 50, 60, 70 employees. Pie chart shows what percentage for largest department?",
+                            options: ["30%", "35%", "40%", "45%"],
+                            correct: 1
+                        },
+                        {
+                            question: "Line graph shows temperature: 20°C, 25°C, 30°C. Table shows conversion: °C to °F = (°C × 9/5) + 32. What is highest temp in °F?",
+                            options: ["68°F", "77°F", "86°F", "95°F"],
+                            correct: 2
+                        },
+                        {
+                            question: "Bar chart: Store A - $5000, Store B - $7000. Pie chart shows Store A is what percentage of total?",
+                            options: ["40%", "41.7%", "43.5%", "45%"],
+                            correct: 1
+                        },
+                        {
+                            question: "Table: Day 1 - 100 visitors, Day 2 - 120. Line graph shows trend continuing. What is Day 3 projection?",
+                            options: ["130", "140", "150", "160"],
+                            correct: 1
+                        },
+                        {
+                            question: "Pie chart: Red 25%, Blue 35%, Green 40%. Table shows total items 400. How many blue items?",
+                            options: ["120", "140", "160", "180"],
+                            correct: 1
+                        },
+                        {
+                            question: "Bar chart shows sales: Jan 300, Feb 400. Line graph shows 10% monthly growth. What is March sales?",
+                            options: ["410", "440", "470", "500"],
+                            correct: 1
                         }
                     ]
                 }
@@ -788,6 +1737,7 @@
         // Initialize the application
         function init() {
             updateLeaderboard();
+            updateUserStats();
             showSection('dashboard');
         }
 
@@ -809,15 +1759,23 @@
 
         // Start a specific game
         function startGame(category, gameType) {
+            // Clear any existing timer
+            if (gameState.timer) {
+                clearInterval(gameState.timer);
+            }
+            
             gameState.currentGame = {
                 category: category,
                 type: gameType,
-                data: gameData[category][gameType]
+                data: gameData[category][gameType],
+                shuffledQuestions: shuffleArray([...gameData[category][gameType].questions])
             };
             
             gameState.score = 0;
             gameState.questionNumber = 1;
             gameState.timeLeft = 60;
+            gameState.correctAnswers = 0;
+            gameState.incorrectAnswers = 0;
             
             showSection('gameInterface');
             document.getElementById('gameTitle').textContent = gameState.currentGame.data.title;
@@ -827,11 +1785,20 @@
             startTimer();
         }
 
+        // Shuffle array function
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
         // Load a question
         function loadQuestion() {
             const game = gameState.currentGame;
-            const questionIndex = (gameState.questionNumber - 1) % game.data.questions.length;
-            const question = game.data.questions[questionIndex];
+            const questionIndex = (gameState.questionNumber - 1) % game.shuffledQuestions.length;
+            const question = game.shuffledQuestions[questionIndex];
             
             const gameContent = document.getElementById('gameContent');
             gameContent.innerHTML = `
@@ -839,7 +1806,7 @@
                     <h3 class="text-xl font-semibold mb-4">${question.question}</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         ${question.options.map((option, index) => `
-                            <button onclick="selectAnswer(${index})" class="option-btn bg-gray-100 hover:bg-blue-100 p-4 rounded-lg text-left transition">
+                            <button onclick="selectAnswer(${index})" class="option-btn bg-gray-100 hover:bg-blue-100 p-4 rounded-lg text-left transition border-2 border-transparent">
                                 <span class="font-semibold">${String.fromCharCode(65 + index)}.</span> ${option}
                             </button>
                         `).join('')}
@@ -854,19 +1821,21 @@
         // Select an answer
         function selectAnswer(answerIndex) {
             const game = gameState.currentGame;
-            const questionIndex = (gameState.questionNumber - 1) % game.data.questions.length;
-            const question = game.data.questions[questionIndex];
+            const questionIndex = (gameState.questionNumber - 1) % game.shuffledQuestions.length;
+            const question = game.shuffledQuestions[questionIndex];
             
             const options = document.querySelectorAll('.option-btn');
             options.forEach(btn => btn.disabled = true);
             
             if (answerIndex === question.correct) {
-                options[answerIndex].classList.add('bg-green-200', 'border-green-500');
+                options[answerIndex].classList.add('correct', 'border-green-500');
                 gameState.score += 10;
+                gameState.correctAnswers++;
                 showFeedback('Correct! +10 points', 'success');
             } else {
-                options[answerIndex].classList.add('bg-red-200', 'border-red-500');
-                options[question.correct].classList.add('bg-green-200', 'border-green-500');
+                options[answerIndex].classList.add('incorrect', 'border-red-500');
+                options[question.correct].classList.add('correct', 'border-green-500');
+                gameState.incorrectAnswers++;
                 showFeedback('Wrong! The correct answer is highlighted', 'error');
             }
             
@@ -885,10 +1854,15 @@
         // Show feedback
         function showFeedback(message, type) {
             const feedback = document.createElement('div');
-            feedback.className = `fixed top-20 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${
+            feedback.className = `fixed top-20 right-4 px-6 py-3 rounded-lg shadow-lg z-50 feedback-toast ${
                 type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
             }`;
-            feedback.textContent = message;
+            feedback.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-times-circle'} mr-2"></i>
+                    ${message}
+                </div>
+            `;
             document.body.appendChild(feedback);
             
             setTimeout(() => feedback.remove(), 2000);
@@ -916,37 +1890,58 @@
         function endGame() {
             clearInterval(gameState.timer);
             
-            const xpEarned = gameState.score * 10;
+            const accuracy = (gameState.correctAnswers / gameState.totalQuestions) * 100;
+            const xpEarned = Math.floor(gameState.score * 10);
             const coinsEarned = Math.floor(gameState.score / 2);
             
+            // Update user stats
             gameState.userStats.xp += xpEarned;
             gameState.userStats.coins += coinsEarned;
             gameState.userStats.gamesPlayed++;
+            gameState.userStats.totalScore += gameState.score;
+            
+            // Update streak based on performance
+            if (accuracy >= 70) {
+                gameState.userStats.streak++;
+            } else {
+                gameState.userStats.streak = 0;
+            }
+            
+            // Check for level up
+            const newLevel = calculateLevel(gameState.userStats.xp);
+            if (newLevel > gameState.userStats.level) {
+                gameState.userStats.level = newLevel;
+                showFeedback(`Level Up! You are now Level ${newLevel}`, 'success');
+            }
             
             document.getElementById('gameContent').innerHTML = `
                 <div class="text-center">
                     <i class="fas fa-trophy text-6xl text-yellow-500 mb-4"></i>
                     <h2 class="text-3xl font-bold mb-4">Game Complete!</h2>
-                    <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                         <div class="bg-blue-50 p-4 rounded-lg">
                             <p class="text-sm text-gray-600">Score</p>
                             <p class="text-2xl font-bold text-blue-600">${gameState.score}</p>
                         </div>
                         <div class="bg-green-50 p-4 rounded-lg">
-                            <p class="text-sm text-gray-600">XP Earned</p>
-                            <p class="text-2xl font-bold text-green-600">+${xpEarned}</p>
+                            <p class="text-sm text-gray-600">Accuracy</p>
+                            <p class="text-2xl font-bold text-green-600">${accuracy.toFixed(1)}%</p>
                         </div>
                         <div class="bg-yellow-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600">XP Earned</p>
+                            <p class="text-2xl font-bold text-yellow-600">+${xpEarned}</p>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-lg">
                             <p class="text-sm text-gray-600">Coins Earned</p>
-                            <p class="text-2xl font-bold text-yellow-600">+${coinsEarned}</p>
+                            <p class="text-2xl font-bold text-purple-600">+${coinsEarned}</p>
                         </div>
                     </div>
                     <div class="space-x-4">
                         <button onclick="exitGame()" class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition">
-                            Back to Dashboard
+                            <i class="fas fa-home mr-2"></i>Back to Dashboard
                         </button>
                         <button onclick="startGame(gameState.currentGame.category, gameState.currentGame.type)" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition">
-                            Play Again
+                            <i class="fas fa-redo mr-2"></i>Play Again
                         </button>
                     </div>
                 </div>
@@ -955,9 +1950,21 @@
             updateUserStats();
         }
 
+        // Calculate level based on XP
+        function calculateLevel(xp) {
+            for (let i = gameState.levelThresholds.length - 1; i >= 0; i--) {
+                if (xp >= gameState.levelThresholds[i].xp) {
+                    return gameState.levelThresholds[i].level;
+                }
+            }
+            return 1;
+        }
+
         // Exit game
         function exitGame() {
-            clearInterval(gameState.timer);
+            if (gameState.timer) {
+                clearInterval(gameState.timer);
+            }
             showSection('dashboard');
         }
 
@@ -965,6 +1972,32 @@
         function updateUserStats() {
             document.getElementById('userCoins').textContent = gameState.userStats.coins;
             document.getElementById('userStreak').textContent = gameState.userStats.streak;
+            document.getElementById('userLevel').textContent = gameState.userStats.level;
+            document.getElementById('gamesPlayed').textContent = gameState.userStats.gamesPlayed;
+            
+            // Calculate average score
+            const avgScore = gameState.userStats.gamesPlayed > 0 
+                ? Math.round((gameState.userStats.totalScore / (gameState.userStats.gamesPlayed * 100)) * 100)
+                : 0;
+            document.getElementById('avgScore').textContent = avgScore + '%';
+            
+            // Update level progress
+            const currentLevel = gameState.userStats.level;
+            const currentXP = gameState.userStats.xp;
+            const nextLevelXP = currentLevel < gameState.levelThresholds.length 
+                ? gameState.levelThresholds[currentLevel].xp 
+                : gameState.levelThresholds[gameState.levelThresholds.length - 1].xp;
+            const prevLevelXP = currentLevel > 1 ? gameState.levelThresholds[currentLevel - 2].xp : 0;
+            
+            document.getElementById('levelNumber').textContent = currentLevel;
+            document.getElementById('currentXP').textContent = currentXP;
+            document.getElementById('nextLevelXP').textContent = nextLevelXP;
+            document.getElementById('nextLevel').textContent = currentLevel + 1;
+            
+            // Update progress bar
+            const progressPercent = ((currentXP - prevLevelXP) / (nextLevelXP - prevLevelXP)) * 100;
+            document.getElementById('progressBar').style.width = progressPercent + '%';
+            document.getElementById('progressPercent').textContent = Math.round(progressPercent) + '%';
         }
 
         // Update leaderboard
