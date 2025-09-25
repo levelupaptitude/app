@@ -1,109 +1,1022 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Levelup Aptitude</title>
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AptitudePro - Gamified Aptitude Trainer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        .game-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        .level-badge {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        
+        .category-card {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .category-card:hover::before {
+            left: 100%;
+        }
+        
+        .trophy-gold {
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        .trophy-silver {
+            color: #C0C0C0;
+            text-shadow: 0 0 10px rgba(192, 192, 192, 0.5);
+        }
+        
+        .trophy-bronze {
+            color: #CD7F32;
+            text-shadow: 0 0 10px rgba(205, 127, 50, 0.5);
+        }
+    </style>
 </head>
-<body>
-  <div id="overlay"></div>
-  <div class="hud">
-    <span id="hud-username"></span>
-    <span id="hud-category"></span>
-    <span id="hud-level"></span>
-    <span id="hud-badges"></span>
-    <span id="hud-xpbar"><span id="hud-xp"></span></span>
-    <span id="hud-combo"></span>
-  </div>
-  <nav>
-    <span class="logo">🎮 Levelup Aptitude</span>
-    <button onclick="navigate('home')">Home</button>
-    <button onclick="navigate('category')">Categories</button>
-    <button onclick="navigate('leaderboard')">Leaderboard</button>
-  </nav>
-  <main>
-    <!-- Home -->
-    <section id="home-section" class="page active">
-      <div class="hero">
-        <div class="hero-left">
-          <h1 class="game-title">Levelup <span class="neon-accent">Aptitude</span></h1>
-          <div class="tagline">Challenge your mind. Unlock levels. Earn badges. Play like a gamer.</div>
-          <ul class="feature-list">
-            <li>🗂️ 4 Categories, 5 Levels Each</li>
-            <li>🏅 Collect badges as you progress</li>
-            <li>💡 Hints & helpful coach</li>
-            <li>🏆 Real-Time Leaderboard</li>
-            <li>🔥 Combo XP & Streak Bonuses</li>
-          </ul>
-          <div class="personalize modern">
-            <input id="username" placeholder="Enter your gamer tag..." maxlength="14" />
-            <button class="cta" onclick="startCategory()">Start Level Up →</button>
-          </div>
+<body class="bg-gray-50">
+    <!-- Navigation Header -->
+    <nav class="gradient-bg text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-brain text-3xl"></i>
+                    <h1 class="text-2xl font-bold">AptitudePro</h1>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <button onclick="showSection('dashboard')" class="nav-btn hover:text-yellow-300 transition">
+                        <i class="fas fa-home mr-2"></i>Dashboard
+                    </button>
+                    <button onclick="showSection('categories')" class="nav-btn hover:text-yellow-300 transition">
+                        <i class="fas fa-th-large mr-2"></i>Categories
+                    </button>
+                    <button onclick="showSection('leaderboard')" class="nav-btn hover:text-yellow-300 transition">
+                        <i class="fas fa-trophy mr-2"></i>Leaderboard
+                    </button>
+                    <div class="flex items-center space-x-3 bg-white/20 px-4 py-2 rounded-full">
+                        <i class="fas fa-coins text-yellow-300"></i>
+                        <span id="userCoins" class="font-bold">1500</span>
+                    </div>
+                    <div class="flex items-center space-x-3 bg-white/20 px-4 py-2 rounded-full">
+                        <i class="fas fa-fire text-orange-300"></i>
+                        <span id="userStreak" class="font-bold">7</span>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="hero-right">
-          <div class="game-art">
-            <div class="floating-cat-card quant">🔢</div>
-            <div class="floating-cat-card logic">🧠</div>
-            <div class="floating-cat-card verbal">💬</div>
-            <div class="floating-cat-card data">📊</div>
-          </div>
-        </div>
-      </div>
-    </section>
-    <!-- Category Selection -->
-    <section id="category-section" class="page">
-      <h2 class="neon-accent">Choose Your Category</h2>
-      <div class="categories">
-        <button class="category-card quant" onclick="selectCategory('quant')">
-          <div class="cat-icon">🔢</div>
-          <div class="cat-title">Quantitative</div>
-        </button>
-        <button class="category-card logic" onclick="selectCategory('logic')">
-          <div class="cat-icon">🧠</div>
-          <div class="cat-title">Logical Reasoning</div>
-        </button>
-        <button class="category-card verbal" onclick="selectCategory('verbal')">
-          <div class="cat-icon">💬</div>
-          <div class="cat-title">Verbal</div>
-        </button>
-        <button class="category-card data" onclick="selectCategory('data')">
-          <div class="cat-icon">📊</div>
-          <div class="cat-title">Data Interpretation</div>
-        </button>
-      </div>
-      <button class="cta secondary" onclick="navigate('home')">← Back</button>
-    </section>
-    <!-- Level Selection -->
-    <section id="level-section" class="page">
-      <h2 class="neon-accent" id="level-header"></h2>
-      <div class="levels-container" id="levels-container"></div>
-      <button class="cta secondary" onclick="navigate('category')">← Back</button>
-    </section>
-    <!-- Practice -->
-    <section id="practice-section" class="page">
-      <h2 class="neon-accent" id="practice-header"></h2>
-      <div id="level-progress"></div>
-      <div id="xp-display">XP: <span id="xp">0</span></div>
-      <div id="xp-bar">
-        <div id="xp-bar-fill"></div>
-      </div>
-      <div id="commentator">
-        <span id="coach">Coach: Ready to play? Let's get those neurons firing! 💡</span>
-      </div>
-      <div id="question-area"></div>
-      <div id="result-area" class="hidden"></div>
-    </section>
-    <!-- Leaderboard -->
-    <section id="leaderboard-section" class="page">
-      <h2 class="neon-accent">🏆 Global Leaderboard</h2>
-      <ol id="leaderboard-list"></ol>
-    </section>
-  </main>
-  <audio id="sfx-correct" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124bfa1d1b.mp3" preload="auto"></audio>
-  <audio id="sfx-wrong" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124d3c1d1c.mp3" preload="auto"></audio>
-  <audio id="sfx-xp" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124bfa1e2e.mp3" preload="auto"></audio>
-  <script src="app.js"></script>
+    </nav>
+
+    <!-- Main Content Container -->
+    <div class="container mx-auto px-4 py-8">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- User Stats Card -->
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-700">Your Progress</h3>
+                        <i class="fas fa-chart-line text-2xl text-purple-500"></i>
+                    </div>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Overall Progress</span>
+                                <span class="font-semibold">65%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full" style="width: 65%"></div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mt-4">
+                            <div class="text-center">
+                                <p class="text-2xl font-bold text-purple-600">12</p>
+                                <p class="text-sm text-gray-600">Games Played</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-2xl font-bold text-green-600">85%</p>
+                                <p class="text-sm text-gray-600">Avg Score</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Level Card -->
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-700">Current Level</h3>
+                        <span class="level-badge text-white px-3 py-1 rounded-full text-sm font-bold">Level 3</span>
+                    </div>
+                    <div class="text-center">
+                        <svg class="w-32 h-32 mx-auto mb-4">
+                            <circle cx="64" cy="64" r="56" stroke="#e5e7eb" stroke-width="8" fill="none"/>
+                            <circle cx="64" cy="64" r="56" stroke="url(#gradient)" stroke-width="8" fill="none"
+                                    stroke-dasharray="351.86" stroke-dashoffset="105.56" class="progress-ring"/>
+                            <defs>
+                                <linearGradient id="gradient">
+                                    <stop offset="0%" stop-color="#667eea"/>
+                                    <stop offset="100%" stop-color="#764ba2"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <p class="text-sm text-gray-600">700 / 1000 XP to Level 4</p>
+                    </div>
+                </div>
+
+                <!-- Achievements Card -->
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-700">Recent Achievements</h3>
+                        <i class="fas fa-medal text-2xl text-yellow-500"></i>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-3 p-2 bg-yellow-50 rounded-lg">
+                            <i class="fas fa-star text-yellow-500"></i>
+                            <div>
+                                <p class="text-sm font-semibold">First Win</p>
+                                <p class="text-xs text-gray-600">Won your first game</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3 p-2 bg-blue-50 rounded-lg">
+                            <i class="fas fa-fire text-orange-500"></i>
+                            <div>
+                                <p class="text-sm font-semibold">On Fire</p>
+                                <p class="text-xs text-gray-600">7 day streak</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3 p-2 bg-purple-50 rounded-lg">
+                            <i class="fas fa-brain text-purple-500"></i>
+                            <div>
+                                <p class="text-sm font-semibold">Quick Thinker</p>
+                                <p class="text-xs text-gray-600">Solved in under 30s</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Play Section -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800">Quick Play</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <button onclick="startQuickGame('logical')" class="category-card bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl text-center">
+                        <i class="fas fa-puzzle-piece text-4xl mb-3"></i>
+                        <h3 class="font-semibold">Logical</h3>
+                        <p class="text-sm opacity-90">5 Games</p>
+                    </button>
+                    <button onclick="startQuickGame('quantitative')" class="category-card bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl text-center">
+                        <i class="fas fa-calculator text-4xl mb-3"></i>
+                        <h3 class="font-semibold">Quantitative</h3>
+                        <p class="text-sm opacity-90">5 Games</p>
+                    </button>
+                    <button onclick="startQuickGame('verbal')" class="category-card bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl text-center">
+                        <i class="fas fa-book text-4xl mb-3"></i>
+                        <h3 class="font-semibold">Verbal</h3>
+                        <p class="text-sm opacity-90">5 Games</p>
+                    </button>
+                    <button onclick="startQuickGame('data')" class="category-card bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-xl text-center">
+                        <i class="fas fa-chart-bar text-4xl mb-3"></i>
+                        <h3 class="font-semibold">Data</h3>
+                        <p class="text-sm opacity-90">5 Games</p>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Categories Section -->
+        <section id="categories" class="section hidden">
+            <h2 class="text-3xl font-bold mb-8 text-gray-800">Choose a Category</h2>
+            
+            <!-- Logical Reasoning -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4 text-gray-700 flex items-center">
+                    <i class="fas fa-puzzle-piece text-blue-500 mr-2"></i>
+                    Logical Reasoning
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('logical', 'pattern')">
+                        <h4 class="font-semibold text-lg mb-2">Pattern Recognition</h4>
+                        <p class="text-gray-600 text-sm mb-3">Identify patterns in sequences</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Easy</span>
+                            <i class="fas fa-arrow-right text-blue-500"></i>
+                        </div>
+                    </div>
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('logical', 'syllogism')">
+                        <h4 class="font-semibold text-lg mb-2">Syllogism</h4>
+                        <p class="text-gray-600 text-sm mb-3">Deductive reasoning puzzles</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">Medium</span>
+                            <i class="fas fa-arrow-right text-yellow-500"></i>
+                        </div>
+                    </div>
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('logical', 'analogy')">
+                        <h4 class="font-semibold text-lg mb-2">Analogies</h4>
+                        <p class="text-gray-600 text-sm mb-3">Find relationships between words</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Easy</span>
+                            <i class="fas fa-arrow-right text-green-500"></i>
+                        </div>
+                    </div>
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('logical', 'series')">
+                        <h4 class="font-semibold text-lg mb-2">Number Series</h4>
+                        <p class="text-gray-600 text-sm mb-3">Complete numerical sequences</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Hard</span>
+                            <i class="fas fa-arrow-right text-red-500"></i>
+                        </div>
+                    </div>
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('logical', 'classification')">
+                        <h4 class="font-semibold text-lg mb-2">Classification</h4>
+                        <p class="text-gray-600 text-sm mb-3">Find the odd one out</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">Medium</span>
+                            <i class="fas fa-arrow-right text-purple-500"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quantitative Aptitude -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4 text-gray-700 flex items-center">
+                    <i class="fas fa-calculator text-green-500 mr-2"></i>
+                    Quantitative Aptitude
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('quantitative', 'arithmetic')">
+                        <h4 class="font-semibold text-lg mb-2">Arithmetic</h4>
+                        <p class="text-gray-600 text-sm mb-3">Basic math operations</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Easy</span>
+                            <i class="fas fa-arrow-right text-blue-500"></i>
+                        </div>
+                    </div>
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('quantitative', 'algebra')">
+                        <h4 class="font-semibold text-lg mb-2">Algebra</h4>
+                        <p class="text-gray-600 text-sm mb-3">Solve equations</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">Medium</span>
+                            <i class="fas fa-arrow-right text-yellow-500"></i>
+                        </div>
+                    </div>
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('quantitative', 'geometry')">
+                        <h4 class="font-semibold text-lg mb-2">Geometry</h4>
+                        <p class="text-gray-600 text-sm mb-3">Shapes and angles</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Hard</span>
+                            <i class="fas fa-arrow-right text-red-500"></i>
+                        </div>
+                    </div>
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('quantitative', 'percentage')">
+                        <h4 class="font-semibold text-lg mb-2">Percentages</h4>
+                        <p class="text-gray-600 text-sm mb-3">Calculate percentages</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Easy</span>
+                            <i class="fas fa-arrow-right text-green-500"></i>
+                        </div>
+                    </div>
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('quantitative', 'profitloss')">
+                        <h4 class="font-semibold text-lg mb-2">Profit & Loss</h4>
+                        <p class="text-gray-600 text-sm mb-3">Business math problems</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">Medium</span>
+                            <i class="fas fa-arrow-right text-purple-500"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verbal Ability -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4 text-gray-700 flex items-center">
+                    <i class="fas fa-book text-purple-500 mr-2"></i>
+                    Verbal Ability
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('verbal', 'synonyms')">
+                        <h4 class="font-semibold text-lg mb-2">Synonyms</h4>
+                        <p class="text-gray-600 text-sm mb-3">Find similar words</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Easy</span>
+                            <i class="fas fa-arrow-right text-blue-500"></i>
+                        </div>
+                    </div>
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('verbal', 'antonyms')">
+                        <h4 class="font-semibold text-lg mb-2">Antonyms</h4>
+                        <p class="text-gray-600 text-sm mb-3">Find opposite words</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Easy</span>
+                            <i class="fas fa-arrow-right text-green-500"></i>
+                        </div>
+                    </div>
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('verbal', 'comprehension')">
+                        <h4 class="font-semibold text-lg mb-2">Comprehension</h4>
+                        <p class="text-gray-600 text-sm mb-3">Read and understand</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Hard</span>
+                            <i class="fas fa-arrow-right text-red-500"></i>
+                        </div>
+                    </div>
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('verbal', 'fillblanks')">
+                        <h4 class="font-semibold text-lg mb-2">Fill in Blanks</h4>
+                        <p class="text-gray-600 text-sm mb-3">Complete sentences</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">Medium</span>
+                            <i class="fas fa-arrow-right text-yellow-500"></i>
+                        </div>
+                    </div>
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('verbal', 'grammar')">
+                        <h4 class="font-semibold text-lg mb-2">Grammar</h4>
+                        <p class="text-gray-600 text-sm mb-3">Correct sentence structure</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">Medium</span>
+                            <i class="fas fa-arrow-right text-purple-500"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Interpretation -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4 text-gray-700 flex items-center">
+                    <i class="fas fa-chart-bar text-orange-500 mr-2"></i>
+                    Data Interpretation
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('data', 'tables')">
+                        <h4 class="font-semibold text-lg mb-2">Data Tables</h4>
+                        <p class="text-gray-600 text-sm mb-3">Interpret tabular data</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Medium</span>
+                            <i class="fas fa-arrow-right text-blue-500"></i>
+                        </div>
+                    </div>
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('data', 'charts')">
+                        <h4 class="font-semibold text-lg mb-2">Charts & Graphs</h4>
+                        <p class="text-gray-600 text-sm mb-3">Read visual data</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Easy</span>
+                            <i class="fas fa-arrow-right text-green-500"></i>
+                        </div>
+                    </div>
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('data', 'piecharts')">
+                        <h4 class="font-semibold text-lg mb-2">Pie Charts</h4>
+                        <p class="text-gray-600 text-sm mb-3">Analyze proportions</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">Medium</span>
+                            <i class="fas fa-arrow-right text-yellow-500"></i>
+                        </div>
+                    </div>
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('data', 'linegraphs')">
+                        <h4 class="font-semibold text-lg mb-2">Line Graphs</h4>
+                        <p class="text-gray-600 text-sm mb-3">Track trends over time</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Hard</span>
+                            <i class="fas fa-arrow-right text-red-500"></i>
+                        </div>
+                    </div>
+                    <div class="game-card p-6 rounded-xl shadow cursor-pointer card-hover" onclick="startGame('data', 'mixed')">
+                        <h4 class="font-semibold text-lg mb-2">Mixed Data</h4>
+                        <p class="text-gray-600 text-sm mb-3">Combine multiple formats</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">Hard</span>
+                            <i class="fas fa-arrow-right text-purple-500"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Leaderboard Section -->
+        <section id="leaderboard" class="section hidden">
+            <h2 class="text-3xl font-bold mb-8 text-gray-800">Global Leaderboard</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Top 3 -->
+                <div class="lg:col-span-3">
+                    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl p-6 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="text-center text-white">
+                                <i class="fas fa-trophy text-6xl trophy-gold mb-4"></i>
+                                <h3 class="text-2xl font-bold">Alex Chen</h3>
+                                <p class="text-xl">15,420 XP</p>
+                                <p class="text-sm opacity-90">Level 12</p>
+                            </div>
+                            <div class="text-center text-white">
+                                <i class="fas fa-trophy text-6xl trophy-silver mb-4"></i>
+                                <h3 class="text-2xl font-bold">Sarah Johnson</h3>
+                                <p class="text-xl">14,890 XP</p>
+                                <p class="text-sm opacity-90">Level 11</p>
+                            </div>
+                            <div class="text-center text-white">
+                                <i class="fas fa-trophy text-6xl trophy-bronze mb-4"></i>
+                                <h3 class="text-2xl font-bold">Mike Wilson</h3>
+                                <p class="text-xl">13,750 XP</p>
+                                <p class="text-sm opacity-90">Level 10</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Full Leaderboard -->
+                <div class="lg:col-span-3">
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+                                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Player</th>
+                                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Level</th>
+                                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">XP</th>
+                                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Games Won</th>
+                                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Win Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200" id="leaderboardBody">
+                                <!-- Leaderboard entries will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Game Interface -->
+        <section id="gameInterface" class="section hidden">
+            <div class="max-w-4xl mx-auto">
+                <!-- Game Header -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h2 id="gameTitle" class="text-2xl font-bold text-gray-800">Game Title</h2>
+                            <p id="gameCategory" class="text-gray-600">Category</p>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="text-center">
+                                <p class="text-sm text-gray-600">Time</p>
+                                <p id="gameTimer" class="text-2xl font-bold text-red-500">60</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm text-gray-600">Score</p>
+                                <p id="gameScore" class="text-2xl font-bold text-green-500">0</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm text-gray-600">Question</p>
+                                <p id="gameQuestion" class="text-2xl font-bold text-blue-500">1/10</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="gameProgress" class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300" style="width: 10%"></div>
+                    </div>
+                </div>
+
+                <!-- Game Content -->
+                <div id="gameContent" class="bg-white rounded-xl shadow-lg p-8">
+                    <!-- Game content will be dynamically inserted here -->
+                </div>
+
+                <!-- Game Controls -->
+                <div class="mt-6 flex justify-between">
+                    <button onclick="exitGame()" class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition">
+                        <i class="fas fa-times mr-2"></i>Exit Game
+                    </button>
+                    <div id="gameActions" class="space-x-4">
+                        <!-- Game action buttons will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Global game state
+        let gameState = {
+            currentSection: 'dashboard',
+            currentGame: null,
+            score: 0,
+            timeLeft: 60,
+            questionNumber: 1,
+            totalQuestions: 10,
+            timer: null,
+            userStats: {
+                coins: 1500,
+                streak: 7,
+                level: 3,
+                xp: 700,
+                gamesPlayed: 12
+            }
+        };
+
+        // Sample game data
+        const gameData = {
+            logical: {
+                pattern: {
+                    title: "Pattern Recognition",
+                    questions: [
+                        {
+                            question: "What comes next in the sequence: 2, 4, 8, 16, ?",
+                            options: ["24", "32", "30", "28"],
+                            correct: 1
+                        },
+                        {
+                            question: "Find the missing number: 3, 6, 9, 12, ?",
+                            options: ["15", "18", "21", "14"],
+                            correct: 0
+                        }
+                    ]
+                },
+                syllogism: {
+                    title: "Syllogism",
+                    questions: [
+                        {
+                            question: "All cats are mammals. Some mammals are black. Which statement must be true?",
+                            options: ["All cats are black", "Some cats are black", "No cats are black", "None of the above"],
+                            correct: 3
+                        }
+                    ]
+                },
+                analogy: {
+                    title: "Analogies",
+                    questions: [
+                        {
+                            question: "Doctor is to Hospital as Teacher is to ?",
+                            options: ["Student", "School", "Book", "Knowledge"],
+                            correct: 1
+                        }
+                    ]
+                },
+                series: {
+                    title: "Number Series",
+                    questions: [
+                        {
+                            question: "Complete the series: 1, 1, 2, 3, 5, 8, ?",
+                            options: ["13", "11", "10", "12"],
+                            correct: 0
+                        }
+                    ]
+                },
+                classification: {
+                    title: "Classification",
+                    questions: [
+                        {
+                            question: "Which word does not belong? Apple, Banana, Carrot, Orange",
+                            options: ["Apple", "Banana", "Carrot", "Orange"],
+                            correct: 2
+                        }
+                    ]
+                }
+            },
+            quantitative: {
+                arithmetic: {
+                    title: "Arithmetic",
+                    questions: [
+                        {
+                            question: "What is 25% of 80?",
+                            options: ["15", "20", "25", "30"],
+                            correct: 1
+                        }
+                    ]
+                },
+                algebra: {
+                    title: "Algebra",
+                    questions: [
+                        {
+                            question: "If x + 5 = 12, what is x?",
+                            options: ["5", "6", "7", "8"],
+                            correct: 2
+                        }
+                    ]
+                },
+                geometry: {
+                    title: "Geometry",
+                    questions: [
+                        {
+                            question: "What is the area of a square with side 5cm?",
+                            options: ["20 cm²", "25 cm²", "30 cm²", "35 cm²"],
+                            correct: 1
+                        }
+                    ]
+                },
+                percentage: {
+                    title: "Percentages",
+                    questions: [
+                        {
+                            question: "A number increased by 20% becomes 60. What was the original number?",
+                            options: ["45", "50", "55", "48"],
+                            correct: 1
+                        }
+                    ]
+                },
+                profitloss: {
+                    title: "Profit & Loss",
+                    questions: [
+                        {
+                            question: "If an item is bought for $100 and sold for $120, what is the profit percentage?",
+                            options: ["15%", "20%", "25%", "30%"],
+                            correct: 1
+                        }
+                    ]
+                }
+            },
+            verbal: {
+                synonyms: {
+                    title: "Synonyms",
+                    questions: [
+                        {
+                            question: "What is a synonym for 'Happy'?",
+                            options: ["Sad", "Joyful", "Angry", "Tired"],
+                            correct: 1
+                        }
+                    ]
+                },
+                antonyms: {
+                    title: "Antonyms",
+                    questions: [
+                        {
+                            question: "What is an antonym for 'Hot'?",
+                            options: ["Warm", "Cool", "Cold", "Mild"],
+                            correct: 2
+                        }
+                    ]
+                },
+                comprehension: {
+                    title: "Comprehension",
+                    questions: [
+                        {
+                            question: "The quick brown fox jumps over the lazy dog. What color is the fox?",
+                            options: ["Red", "Brown", "White", "Black"],
+                            correct: 1
+                        }
+                    ]
+                },
+                fillblanks: {
+                    title: "Fill in Blanks",
+                    questions: [
+                        {
+                            question: "The sun _____ in the east.",
+                            options: ["rises", "sets", "shines", "moves"],
+                            correct: 0
+                        }
+                    ]
+                },
+                grammar: {
+                    title: "Grammar",
+                    questions: [
+                        {
+                            question: "Which sentence is correct?",
+                            options: ["He go to school", "He goes to school", "He going to school", "He gone to school"],
+                            correct: 1
+                        }
+                    ]
+                }
+            },
+            data: {
+                tables: {
+                    title: "Data Tables",
+                    questions: [
+                        {
+                            question: "Based on the table: Product A sold 100 units, Product B sold 150 units. Which sold more?",
+                            options: ["Product A", "Product B", "Equal", "Cannot determine"],
+                            correct: 1
+                        }
+                    ]
+                },
+                charts: {
+                    title: "Charts & Graphs",
+                    questions: [
+                        {
+                            question: "If a bar chart shows January sales at 200 and February at 250, what is the increase?",
+                            options: ["20%", "25%", "30%", "50%"],
+                            correct: 1
+                        }
+                    ]
+                },
+                piecharts: {
+                    title: "Pie Charts",
+                    questions: [
+                        {
+                            question: "In a pie chart, if a slice is 90 degrees, what percentage does it represent?",
+                            options: ["20%", "25%", "30%", "50%"],
+                            correct: 1
+                        }
+                    ]
+                },
+                linegraphs: {
+                    title: "Line Graphs",
+                    questions: [
+                        {
+                            question: "A line graph shows temperature rising from 20°C to 30°C over 5 hours. What is the average increase per hour?",
+                            options: ["1°C", "2°C", "3°C", "4°C"],
+                            correct: 1
+                        }
+                    ]
+                },
+                mixed: {
+                    title: "Mixed Data",
+                    questions: [
+                        {
+                            question: "A table shows 50 apples and a pie chart shows 60% are red. How many red apples?",
+                            options: ["25", "30", "35", "40"],
+                            correct: 1
+                        }
+                    ]
+                }
+            }
+        };
+
+        // Initialize the application
+        function init() {
+            updateLeaderboard();
+            showSection('dashboard');
+        }
+
+        // Show different sections
+        function showSection(sectionName) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.add('hidden'));
+            
+            document.getElementById(sectionName).classList.remove('hidden');
+            gameState.currentSection = sectionName;
+        }
+
+        // Start a quick game
+        function startQuickGame(category) {
+            const games = Object.keys(gameData[category]);
+            const randomGame = games[Math.floor(Math.random() * games.length)];
+            startGame(category, randomGame);
+        }
+
+        // Start a specific game
+        function startGame(category, gameType) {
+            gameState.currentGame = {
+                category: category,
+                type: gameType,
+                data: gameData[category][gameType]
+            };
+            
+            gameState.score = 0;
+            gameState.questionNumber = 1;
+            gameState.timeLeft = 60;
+            
+            showSection('gameInterface');
+            document.getElementById('gameTitle').textContent = gameState.currentGame.data.title;
+            document.getElementById('gameCategory').textContent = category.charAt(0).toUpperCase() + category.slice(1);
+            
+            loadQuestion();
+            startTimer();
+        }
+
+        // Load a question
+        function loadQuestion() {
+            const game = gameState.currentGame;
+            const questionIndex = (gameState.questionNumber - 1) % game.data.questions.length;
+            const question = game.data.questions[questionIndex];
+            
+            const gameContent = document.getElementById('gameContent');
+            gameContent.innerHTML = `
+                <div class="mb-6">
+                    <h3 class="text-xl font-semibold mb-4">${question.question}</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        ${question.options.map((option, index) => `
+                            <button onclick="selectAnswer(${index})" class="option-btn bg-gray-100 hover:bg-blue-100 p-4 rounded-lg text-left transition">
+                                <span class="font-semibold">${String.fromCharCode(65 + index)}.</span> ${option}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('gameQuestion').textContent = `${gameState.questionNumber}/${gameState.totalQuestions}`;
+            updateProgress();
+        }
+
+        // Select an answer
+        function selectAnswer(answerIndex) {
+            const game = gameState.currentGame;
+            const questionIndex = (gameState.questionNumber - 1) % game.data.questions.length;
+            const question = game.data.questions[questionIndex];
+            
+            const options = document.querySelectorAll('.option-btn');
+            options.forEach(btn => btn.disabled = true);
+            
+            if (answerIndex === question.correct) {
+                options[answerIndex].classList.add('bg-green-200', 'border-green-500');
+                gameState.score += 10;
+                showFeedback('Correct! +10 points', 'success');
+            } else {
+                options[answerIndex].classList.add('bg-red-200', 'border-red-500');
+                options[question.correct].classList.add('bg-green-200', 'border-green-500');
+                showFeedback('Wrong! The correct answer is highlighted', 'error');
+            }
+            
+            document.getElementById('gameScore').textContent = gameState.score;
+            
+            setTimeout(() => {
+                gameState.questionNumber++;
+                if (gameState.questionNumber > gameState.totalQuestions) {
+                    endGame();
+                } else {
+                    loadQuestion();
+                }
+            }, 2000);
+        }
+
+        // Show feedback
+        function showFeedback(message, type) {
+            const feedback = document.createElement('div');
+            feedback.className = `fixed top-20 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+            }`;
+            feedback.textContent = message;
+            document.body.appendChild(feedback);
+            
+            setTimeout(() => feedback.remove(), 2000);
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            const progress = (gameState.questionNumber / gameState.totalQuestions) * 100;
+            document.getElementById('gameProgress').style.width = `${progress}%`;
+        }
+
+        // Start timer
+        function startTimer() {
+            gameState.timer = setInterval(() => {
+                gameState.timeLeft--;
+                document.getElementById('gameTimer').textContent = gameState.timeLeft;
+                
+                if (gameState.timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        // End game
+        function endGame() {
+            clearInterval(gameState.timer);
+            
+            const xpEarned = gameState.score * 10;
+            const coinsEarned = Math.floor(gameState.score / 2);
+            
+            gameState.userStats.xp += xpEarned;
+            gameState.userStats.coins += coinsEarned;
+            gameState.userStats.gamesPlayed++;
+            
+            document.getElementById('gameContent').innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-trophy text-6xl text-yellow-500 mb-4"></i>
+                    <h2 class="text-3xl font-bold mb-4">Game Complete!</h2>
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600">Score</p>
+                            <p class="text-2xl font-bold text-blue-600">${gameState.score}</p>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600">XP Earned</p>
+                            <p class="text-2xl font-bold text-green-600">+${xpEarned}</p>
+                        </div>
+                        <div class="bg-yellow-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600">Coins Earned</p>
+                            <p class="text-2xl font-bold text-yellow-600">+${coinsEarned}</p>
+                        </div>
+                    </div>
+                    <div class="space-x-4">
+                        <button onclick="exitGame()" class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition">
+                            Back to Dashboard
+                        </button>
+                        <button onclick="startGame(gameState.currentGame.category, gameState.currentGame.type)" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition">
+                            Play Again
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            updateUserStats();
+        }
+
+        // Exit game
+        function exitGame() {
+            clearInterval(gameState.timer);
+            showSection('dashboard');
+        }
+
+        // Update user stats display
+        function updateUserStats() {
+            document.getElementById('userCoins').textContent = gameState.userStats.coins;
+            document.getElementById('userStreak').textContent = gameState.userStats.streak;
+        }
+
+        // Update leaderboard
+        function updateLeaderboard() {
+            const leaderboardData = [
+                { rank: 1, name: "Alex Chen", level: 12, xp: 15420, gamesWon: 89, winRate: 92 },
+                { rank: 2, name: "Sarah Johnson", level: 11, xp: 14890, gamesWon: 76, winRate: 88 },
+                { rank: 3, name: "Mike Wilson", level: 10, xp: 13750, gamesWon: 65, winRate: 85 },
+                { rank: 4, name: "Emma Davis", level: 9, xp: 12600, gamesWon: 58, winRate: 82 },
+                { rank: 5, name: "James Brown", level: 9, xp: 11890, gamesWon: 52, winRate: 80 },
+                { rank: 6, name: "Lisa Anderson", level: 8, xp: 10540, gamesWon: 45, winRate: 78 },
+                { rank: 7, name: "David Lee", level: 8, xp: 9870, gamesWon: 41, winRate: 76 },
+                { rank: 8, name: "Jennifer Taylor", level: 7, xp: 8650, gamesWon: 35, winRate: 74 },
+                { rank: 9, name: "Robert Martinez", level: 7, xp: 7890, gamesWon: 30, winRate: 72 },
+                { rank: 10, name: "Maria Garcia", level: 6, xp: 6780, gamesWon: 25, winRate: 70 }
+            ];
+            
+            const tbody = document.getElementById('leaderboardBody');
+            tbody.innerHTML = leaderboardData.map(player => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="text-lg font-semibold ${player.rank <= 3 ? 'text-yellow-600' : 'text-gray-900'}">
+                            ${player.rank <= 3 ? '<i class="fas fa-trophy mr-2"></i>' : ''}${player.rank}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <img class="h-10 w-10 rounded-full" src="https://picsum.photos/seed/${player.name}/40/40.jpg" alt="">
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">${player.name}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                            Level ${player.level}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${player.xp.toLocaleString()}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${player.gamesWon}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${player.winRate}%</div>
+                        <div class="mt-1 w-full bg-gray-200 rounded-full h-1.5">
+                            <div class="bg-green-500 h-1.5 rounded-full" style="width: ${player.winRate}%"></div>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Initialize the app when page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 </html>
