@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Levelup Aptitude</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="overlay"></div>
+  <div class="hud">
+    <span id="hud-username"></span>
+    <span id="hud-category"></span>
+    <span id="hud-level"></span>
+    <span id="hud-badges"></span>
+    <span id="hud-xpbar"><span id="hud-xp"></span></span>
+    <span id="hud-combo"></span>
+  </div>
+  <nav>
+    <span class="logo">🎮 Levelup Aptitude</span>
+    <button onclick="navigate('home')">Home</button>
+    <button onclick="navigate('category')">Categories</button>
+    <button onclick="navigate('leaderboard')">Leaderboard</button>
+  </nav>
+  <main>
+    <!-- Home -->
+    <section id="home-section" class="page active">
+      <div class="hero">
+        <div class="hero-left">
+          <h1 class="game-title">Levelup <span class="neon-accent">Aptitude</span></h1>
+          <div class="tagline">Challenge your mind. Unlock levels. Earn badges. Play like a gamer.</div>
+          <ul class="feature-list">
+            <li>🗂️ 4 Categories, 5 Levels Each</li>
+            <li>🏅 Collect badges as you progress</li>
+            <li>💡 Hints & helpful coach</li>
+            <li>🏆 Real-Time Leaderboard</li>
+            <li>🔥 Combo XP & Streak Bonuses</li>
+          </ul>
+          <div class="personalize modern">
+            <input id="username" placeholder="Enter your gamer tag..." maxlength="14" />
+            <button class="cta" onclick="startCategory()">Start Level Up →</button>
+          </div>
+        </div>
+        <div class="hero-right">
+          <div class="game-art">
+            <div class="floating-cat-card quant">🔢</div>
+            <div class="floating-cat-card logic">🧠</div>
+            <div class="floating-cat-card verbal">💬</div>
+            <div class="floating-cat-card data">📊</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Category Selection -->
+    <section id="category-section" class="page">
+      <h2 class="neon-accent">Choose Your Category</h2>
+      <div class="categories">
+        <button class="category-card quant" onclick="selectCategory('quant')">
+          <div class="cat-icon">🔢</div>
+          <div class="cat-title">Quantitative</div>
+        </button>
+        <button class="category-card logic" onclick="selectCategory('logic')">
+          <div class="cat-icon">🧠</div>
+          <div class="cat-title">Logical Reasoning</div>
+        </button>
+        <button class="category-card verbal" onclick="selectCategory('verbal')">
+          <div class="cat-icon">💬</div>
+          <div class="cat-title">Verbal</div>
+        </button>
+        <button class="category-card data" onclick="selectCategory('data')">
+          <div class="cat-icon">📊</div>
+          <div class="cat-title">Data Interpretation</div>
+        </button>
+      </div>
+      <button class="cta secondary" onclick="navigate('home')">← Back</button>
+    </section>
+    <!-- Level Selection -->
+    <section id="level-section" class="page">
+      <h2 class="neon-accent" id="level-header"></h2>
+      <div class="levels-container" id="levels-container"></div>
+      <button class="cta secondary" onclick="navigate('category')">← Back</button>
+    </section>
+    <!-- Practice -->
+    <section id="practice-section" class="page">
+      <h2 class="neon-accent" id="practice-header"></h2>
+      <div id="level-progress"></div>
+      <div id="xp-display">XP: <span id="xp">0</span></div>
+      <div id="xp-bar">
+        <div id="xp-bar-fill"></div>
+      </div>
+      <div id="commentator">
+        <span id="coach">Coach: Ready to play? Let's get those neurons firing! 💡</span>
+      </div>
+      <div id="question-area"></div>
+      <div id="result-area" class="hidden"></div>
+    </section>
+    <!-- Leaderboard -->
+    <section id="leaderboard-section" class="page">
+      <h2 class="neon-accent">🏆 Global Leaderboard</h2>
+      <ol id="leaderboard-list"></ol>
+    </section>
+  </main>
+  <audio id="sfx-correct" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124bfa1d1b.mp3" preload="auto"></audio>
+  <audio id="sfx-wrong" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124d3c1d1c.mp3" preload="auto"></audio>
+  <audio id="sfx-xp" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124bfa1e2e.mp3" preload="auto"></audio>
+  <script src="app.js"></script>
+</body>
+</html>
